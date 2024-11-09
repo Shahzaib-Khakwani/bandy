@@ -1,0 +1,39 @@
+version: "3.7"
+services:
+  redis:
+    image: redis:alpine
+    container_name: redis
+
+  db:
+    image: postgres
+    container_name: postgres_container
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+
+  app:
+    build: .
+    volumes:
+      - .:/django
+    ports:
+        - 8000:8000
+    image: app:django
+    container_name: django_container
+    depends_on:
+      - db
+  
+  celery:
+    restart: always
+    build: .
+    command: celery -A core worker -l DEBUG
+    container_name: celery
+    volumes:
+      - .:/django/
+    depends_on:
+      - db
+      - redis
+      - app
+
