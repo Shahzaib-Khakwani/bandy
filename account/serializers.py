@@ -1,6 +1,9 @@
 from rest_framework import serializers
 from .models import CustomUser
 from rest_framework.exceptions import ValidationError
+
+
+
 class CustomUserSerializer(serializers.ModelSerializer):
     
     email = serializers.EmailField(required = True)
@@ -11,7 +14,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['email', 'user_name', 'password']
+        fields = ['email', 'user_name', 'password', 'first_name', 'last_name', 'gender', 'department', 'about',]
         extra_kwargs = {'password': {'write_only': True}}
 
 
@@ -29,7 +32,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
         instance = self.Meta.model(**validated_data)
         if password is not None:
-            instance.set_password(password)
-        
+            instance.set_password(password)       
         instance.save()
         return instance

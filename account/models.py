@@ -35,13 +35,21 @@ class CustomAccountManager(BaseUserManager):
 
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
+    GENDER_OPTIONS = (
+        ("Male", "Male"),
+        ("Female", "Female"),
+        ("Others", "Others"),
+    )
 
     email = models.EmailField(_('email address'), unique=True)
     user_name = models.CharField(max_length=150, unique=True)
-    first_name = models.CharField(max_length=150, blank=True)
-    start_date = models.DateTimeField(default=timezone.now)
+    first_name = models.CharField(max_length=150, blank=True, null=True)
+    last_name = models.CharField(max_length=150, blank=True, null=True)
+    gender = models.CharField(max_length=10, choices=GENDER_OPTIONS )
+    department = models.CharField(max_length=150, blank=True, null=True)
     about = models.TextField(_(
-        'about'), max_length=500, blank=True)
+        'about'), max_length=500, blank=True, null=True)
+    start_date = models.DateTimeField(default=timezone.now)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
     is_varified = models.BooleanField(default=False)

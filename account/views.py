@@ -29,35 +29,43 @@ class UserRegisteration(APIView):
             user = serializer.save()
             if user:
                 tries = cache.get(f"{user.id}-tries",0)
-                if tries > 10:
+                if tries > 100:
                     return Response("Too Many Otp Requests Try After 5 hours", status=status.HTTP_400_BAD_REQUEST)
-                otp = self.generate_uuid_otp()
+                otp = self.generate_uuid_otp()[:6]
                 cache.set(f"{user.id}-otp", otp, timeout=1000)
                 cache.set(f"{user.id}-tries", tries+1, timeout=18000)
                 print(user.email)
                 send_otp_email.delay(user.email, otp)
                 data = json.dumps({'id':user.id})
                 return Response(data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class OTPverfication(APIView):
     permission_classes = [AllowAny]
     
-    def post(self,request, id):
+    def post(self, request):
+        email = request.data.get('email')
         otp = request.data.get('otp')
-        correct_otp = cache.get(f"{id}-otp", 0)
+        
+        user = get_object_or_404(CustomUser, email=email)
+        
+        correct_otp = cache.get(f"{user.id}-otp", 0)
+        
+            
         if correct_otp == otp:
-            user = get_object_or_404(CustomUser, id=id)
-            user.is_varified = True
+            user.is_varified = True 
             user.is_active = True
-
             user.save()
-            cache.delete(f"{id}-otp")
-            return Response(status=status.HTTP_200_OK)
+            
+            cache.delete(f"{user.id}-otp")
+            
+            return Response({
+                "message": "OTP verified successfully"
+            }, status=status.HTTP_200_OK)
         else:
-            return Response("wrong or expired Otp ", status=status.HTTP_400_BAD_REQUEST)
-
-
+            return Response({
+                "message": "Wrong or expired OTP"
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 class PasswordResetRequest(APIView):
     permission_classes = [AllowAny]

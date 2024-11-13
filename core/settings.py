@@ -20,7 +20,7 @@ SECRET_KEY = 'django-insecure-c23b+s$94&!2ert_%q^ziincs-1txwauie7850-)b*ksfxrhwf
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 
@@ -35,13 +35,17 @@ INSTALLED_APPS = [
     #external app
     'rest_framework_simplejwt',
     'rest_framework',
+    'django_celery_beat',
+    'corsheaders',
     #custom app
     'account',
 ]
+CORS_ALLOW_ALL_ORIGINS = True
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -81,7 +85,7 @@ DATABASES = {
         "NAME": "postgres",
         "USER": "postgres",
         "PASSWORD": "postgres",
-        "HOST": "db",
+        "HOST": "postgres_container",
         "PORT": "5432",
     }
 }

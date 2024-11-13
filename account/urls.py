@@ -6,9 +6,9 @@ from .views import UserRegisteration, OTPverfication, PasswordResetRequest, OTPV
 urlpatterns = [
     path('register/', UserRegisteration.as_view(), name='user-registration'),
     
-    path('verify-otp/<int:id>/', OTPverfication.as_view(), name='otp-verification'),
+    path('verify-otp/', OTPverfication.as_view(), name='otp-verification'),
     
-    path('password-reset_verification/', OTPVerificationAndPasswordReset.as_view(), name='password-reset-request'),
+    path('password-reset-verification/', OTPVerificationAndPasswordReset.as_view(), name='password-reset-request'),
     
     path('password-reset-request/', PasswordResetRequest.as_view(), name='password-reset'),
 ]
