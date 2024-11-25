@@ -34,11 +34,10 @@ class UserRegisteration(APIView):
                 otp = self.generate_uuid_otp()[:6]
                 cache.set(f"{user.id}-otp", otp, timeout=1000)
                 cache.set(f"{user.id}-tries", tries+1, timeout=18000)
-                print(user.email)
                 send_otp_email.delay(user.email, otp)
                 data = json.dumps({'id':user.id})
-                return Response(data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"message": "OTP sent to your email"}, status=status.HTTP_201_CREATED)
+        return Response({"message":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 class OTPverfication(APIView):
     permission_classes = [AllowAny]

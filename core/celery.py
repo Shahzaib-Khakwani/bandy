@@ -9,7 +9,7 @@ app.config_from_object('django.conf:settings', namespace="CELERY")
 app.conf.beat_schedule = {
     'cleanup-unverified-users-every-30-seconds': {
         'task': 'account.tasks.cleanup_unverified_users',  
-        'schedule': 30.0,  
+        'schedule': 36000.0,  
     },
 }
 
