@@ -2,6 +2,14 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+from django.utils.timezone import now
+
+
+
+class FriendshipManager(models.Manager):
+    def active(self):
+        """Return only active friendships."""
+        return super().get_queryset().filter(is_active=True)
 
 
 class CustomAccountManager(BaseUserManager):
@@ -54,6 +62,13 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=False)
     is_varified = models.BooleanField(default=False)
 
+    friends = models.ManyToManyField(
+        'self', 
+        through='Friendship', 
+        symmetrical=False, 
+        related_name='friend_of'
+    )
+
     objects = CustomAccountManager()
 
     USERNAME_FIELD = 'email'
@@ -61,3 +76,28 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.user_name
+    
+
+class Friendship(models.Model):
+    """Intermediary model to manage friendships between users."""
+    user = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='friendships_initiated')
+    friend = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='friendships_received')
+    created_at = models.DateTimeField(auto_now_add=True)
+    accepted_at = models.DateTimeField(blank=True, null=True)
+    is_active = models.BooleanField(default=False)
+
+    objects = FriendshipManager()
+    all = models.Manager()
+
+    class Meta:
+        unique_together = ('user', 'friend')
+        ordering = ['-created_at']
+
+    def accept_friendship(self):
+        """Accept a pending friendship request."""
+        self.is_active = True
+        self.accepted_at = now()
+        self.save()
+
+    def __str__(self):
+        return f"{self.user.user_name} is friends with {self.friend.user_name} (active: {self.is_active})"

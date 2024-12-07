@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'corsheaders',
     #custom app
     'account',
+    'post',
+
 ]
 CORS_ALLOW_ALL_ORIGINS = True
 

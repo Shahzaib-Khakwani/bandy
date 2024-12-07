@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
 from .serializers import CustomUserSerializer
 from django.core.cache import cache
 import uuid
@@ -142,3 +143,23 @@ class OTPVerificationAndPasswordReset(APIView):
         cache.delete(f"{id}-reset-otp")
 
         return Response({"message": "Password reset successful"}, status=status.HTTP_200_OK)
+
+
+
+
+class UserDetailView(APIView):
+    permission_classes = [IsAuthenticated] 
+    def get(self, request, *args, **kwargs):
+        user_id = kwargs.get('user_id', None)
+
+        if user_id:
+            try:
+                user = CustomUser.objects.get(id=user_id)
+            except CustomUser.DoesNotExist:
+                return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            user = request.user  
+
+        serializer = CustomUserSerializer(user)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)

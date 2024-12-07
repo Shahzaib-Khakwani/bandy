@@ -9,12 +9,11 @@ class CustomUserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required = True)
     user_name = serializers.CharField(required = True)
     password = serializers.CharField(min_length = 8, write_only=True)
-
-
+    friends = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), many=True)
 
     class Meta:
         model = CustomUser
-        fields = ['email', 'user_name', 'password', 'first_name', 'last_name', 'gender', 'department', 'about',]
+        fields = ['email', 'user_name', 'password', 'first_name', 'last_name', 'gender', 'department', 'about','friends']
         extra_kwargs = {'password': {'write_only': True}}
 
 
@@ -35,3 +34,4 @@ class CustomUserSerializer(serializers.ModelSerializer):
             instance.set_password(password)       
         instance.save()
         return instance
+    
