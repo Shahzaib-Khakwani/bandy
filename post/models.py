@@ -22,7 +22,7 @@ class Post(models.Model):
         ordering = ['-created_at']
     
     def __str__(self):
-        return f"{self.post_type.capitalize()} post by {self.author.username}"
+        return f"{self.post_type.capitalize()} post by {self.author.user_name}"
 
 
 class TextPost(Post):
@@ -75,7 +75,7 @@ class Like(models.Model):
         ordering = ['-created_at']
     
     def __str__(self):
-        return f"{self.user.username} likes {self.post}"
+        return f"{self.user.user_name} likes {self.post}"
 
 
 class Comment(models.Model):
@@ -91,7 +91,7 @@ class Comment(models.Model):
         ordering = ['-created_at']
     
     def __str__(self):
-        return f"Comment by {self.author.username} on {self.post}"
+        return f"Comment by {self.author.user_name} on {self.post}"
     
     @property
     def is_reply(self):
@@ -109,4 +109,4 @@ class CommentLike(models.Model):
         ordering = ['-created_at']
     
     def __str__(self):
-        return f"{self.user.username} likes comment by {self.comment.author.username}"
+        return f"{self.user.user_name} likes comment by {self.comment.author.user_name}"
