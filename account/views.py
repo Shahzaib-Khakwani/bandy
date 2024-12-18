@@ -11,11 +11,40 @@ from .tasks import send_otp_email
 from django.shortcuts import get_object_or_404
 from .models import CustomUser
 import json
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
 
+class UpdateBioView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        try:
+            bio = request.data.get('bio')
+            
+            if not bio:
+                return Response(
+                    {'message': 'Bio is required'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            request.user.about = bio
+            request.user.save()
+            
+            return Response(
+                {'message': 'Bio updated successfully'}, 
+                status=status.HTTP_200_OK
+            )
+        
+        except Exception as e:
+            return Response(
+                {'message': str(e)}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+from rest_framework.renderers import JSONRenderer
 
 
 class UserRegisteration(APIView):
-
+    
     permission_classes = [AllowAny]
     
     @staticmethod
@@ -30,7 +59,7 @@ class UserRegisteration(APIView):
             user = serializer.save()
             if user:
                 tries = cache.get(f"{user.id}-tries",0)
-                if tries > 100:
+                if tries > 10:
                     return Response("Too Many Otp Requests Try After 5 hours", status=status.HTTP_400_BAD_REQUEST)
                 otp = self.generate_uuid_otp()[:6]
                 cache.set(f"{user.id}-otp", otp, timeout=1000)
@@ -38,7 +67,10 @@ class UserRegisteration(APIView):
                 send_otp_email.delay(user.email, otp)
                 data = json.dumps({'id':user.id})
                 return Response({"message": "OTP sent to your email"}, status=status.HTTP_201_CREATED)
-        return Response({"message":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"message": "OTP sent to your email"}, status=status.HTTP_200_OK)
+
+    
 
 class OTPverfication(APIView):
     permission_classes = [AllowAny]
@@ -148,7 +180,8 @@ class OTPVerificationAndPasswordReset(APIView):
 
 
 class UserDetailView(APIView):
-    permission_classes = [IsAuthenticated] 
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, *args, **kwargs):
         user_id = kwargs.get('user_id', None)
 
@@ -156,10 +189,66 @@ class UserDetailView(APIView):
             try:
                 user = CustomUser.objects.get(id=user_id)
             except CustomUser.DoesNotExist:
-                return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+                return Response({
+                    'success': False,
+                    'error': 'User not found.'
+                }, status=status.HTTP_404_NOT_FOUND)
         else:
-            user = request.user  
+            user = request.user
 
-        serializer = CustomUserSerializer(user)
+        if not user:
+            return Response({
+                'success': False,
+                'error': 'User not found.'
+            }, status=status.HTTP_404_NOT_FOUND)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        try:
+            serializer = CustomUserSerializer(user)
+            return Response({
+                'success': True,
+                'data': serializer.data
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                'success': False,
+                'error': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+class UpdateProfilePictureView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        try:
+            # Get the current user
+            user = request.user
+
+            # Check if an image is provided
+            if 'profile_picture' not in request.FILES:
+                return Response({
+                    'success': False, 
+                    'detail': 'No profile picture uploaded'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # Get the uploaded image
+            image = request.FILES['profile_picture']
+
+            # Update the user's profile picture
+            user.image = image
+            user.save()
+
+            # Serialize the updated user data
+            serializer = CustomUserSerializer(user)
+
+            return Response({
+                'success': True,
+                'detail': 'Profile picture updated successfully',
+                'data': serializer.data
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({
+                'success': False,
+                'detail': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

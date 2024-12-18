@@ -1,11 +1,13 @@
 from django.urls import path
-from .views import FeedView, CreateTextPostView, CreatePhotoPostView, CreateVideoPostView, CreateLinkPostView
-
+from .views import AddLikeView, FeedView,CreatePostView, UserPostsView
+from .views import CommentListCreateView
 urlpatterns = [
     path('feed/', FeedView.as_view(), name='user-feed'),
-    path('create/text/', CreateTextPostView.as_view(), name='create_text_post'),
-    path('create/photo/', CreatePhotoPostView.as_view(), name='create_photo_post'),
-    path('create/video/', CreateVideoPostView.as_view(), name='create_video_post'),
-    path('create/link/', CreateLinkPostView.as_view(), name='create_link_post'),
+    path('create/post/', CreatePostView.as_view(), name='create_post'),
+    
+    path('like/post/<int:post_id>/', AddLikeView.as_view(), name='like_post'),
+    path('<int:post_id>/comments/', CommentListCreateView.as_view(), name='post-comments'),
+
+     path('user/posts/', UserPostsView.as_view(), name='user-posts'),
 
 ]

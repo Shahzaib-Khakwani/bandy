@@ -54,6 +54,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=150, blank=True, null=True)
     last_name = models.CharField(max_length=150, blank=True, null=True)
     gender = models.CharField(max_length=10, choices=GENDER_OPTIONS )
+    image = models.ImageField(upload_to='users/', blank=True, null=True)
     department = models.CharField(max_length=150, blank=True, null=True)
     about = models.TextField(_(
         'about'), max_length=500, blank=True, null=True)
