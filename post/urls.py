@@ -8,6 +8,8 @@ urlpatterns = [
     path('like/post/<int:post_id>/', AddLikeView.as_view(), name='like_post'),
     path('<int:post_id>/comments/', CommentListCreateView.as_view(), name='post-comments'),
 
-     path('user/posts/', UserPostsView.as_view(), name='user-posts'),
+    path('user/posts/', UserPostsView.as_view(), name='user-posts'),
+
+    path('delete/<int:post_id>/', PostDeleteView.as_view(), name='delete_post'),
 
 ]
